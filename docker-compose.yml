@@ -1,3 +1,15 @@
+# Standalone AMD ROCm GPU Compose file for stack-management UIs (Portainer,
+# Coolify, Dockhand, etc.) that accept only a single Compose file and do not
+# reliably honor COMPOSE_FILE or multiple `-f` overlays.
+#
+# This is equivalent to: docker-compose.yml + docker/gpu.amd.yml.
+# The base docker-compose.yml plus the docker/gpu.amd.yml overlay remain the
+# source of truth — CLI users should keep using the COMPOSE_FILE overlay
+# workflow. Keep this file in sync with both when either changes.
+#
+# Requires ROCm drivers on the host (kfd + DRI devices) and the host user
+# running Docker in the `video` and `render` groups. Set RENDER_GID to your
+# host's numeric render group id when needed. See docker/gpu.amd.yml for details.
 services:
   odysseus:
     build: .
@@ -24,8 +36,6 @@ services:
       # there must match the host's `docker` group (defaults to 963
       # on Debian, 999 on Ubuntu — override via env if yours differs).
       - /var/run/docker.sock:/var/run/docker.sock
-    group_add:
-      - "${DOCKER_GID:-963}"
     extra_hosts:
       # Lets the container reach local services on the Docker host, including
       # Ollama at http://host.docker.internal:11434.
@@ -86,6 +96,14 @@ services:
       chromadb:
         condition: service_started
     restart: unless-stopped
+    # AMD ROCm overlay (from docker/gpu.amd.yml).
+    devices:
+      - /dev/kfd
+      - /dev/dri
+    group_add:
+      - "${DOCKER_GID:-963}"
+      - video
+      - ${RENDER_GID:-render}
 
   chromadb:
     image: docker.io/chromadb/chroma:latest
