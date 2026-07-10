@@ -48,7 +48,7 @@ services:
       - CORS_ALLOW_ORIGIN=${OPENWEBUI_CORS_ALLOW_ORIGIN:-https://ai.omega2k.de}
       - USER_AGENT=${OPENWEBUI_USER_AGENT:-odysseus-open-webui}
     volumes:
-      - open-webui-data:/app/backend/data
+      - ${APP_DATA_DIR:-./data}/open-webui:/app/backend/data
     depends_on:
       ollama:
         condition: service_healthy
