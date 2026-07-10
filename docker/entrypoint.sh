@@ -125,8 +125,6 @@ for cu in \
     fi
 done
 
-curl -fsSL https://opencode.ai/install | bash
-
 # Disable the FlashInfer JIT sampler unconditionally — it is sampler-only
 # and has no impact on the attention path, but requires nvcc + matching
 # CUDA headers at startup. Without this, vLLM crashes with "Could not find

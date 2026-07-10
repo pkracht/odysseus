@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     curl \
+    ca-certificates \
     git \
     nodejs \
     npm \
@@ -104,6 +105,8 @@ RUN mkdir -p data logs services/cache/search
 # prefs persistence, mail attachments, etc.
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
+
+RUN npm install -g opencode-ai @playwright/mcp@latest
 
 EXPOSE 7000
 
