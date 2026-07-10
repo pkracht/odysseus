@@ -35,8 +35,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL https://opencode.ai/install | bash
-
 # libgl1/libglib2.0-0t64/libxcb1 are runtime shared libs (libGL.so.1,
 # libglib-2.0/libgthread, libxcb.so.1) that opencv-python (cv2) loads. The
 # slim base omits them, so the Cookbook "install realesrgan" path imports cv2
