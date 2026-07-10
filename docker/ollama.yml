@@ -1,0 +1,55 @@
+services:
+  ollama:
+    container_name: odysseus-ollama
+    hostname: odysseus-ollama
+    image: ollama/ollama:latest
+    shm_size: 8gb
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+      - HF_TOKEN=${HF_TOKEN}
+      - OLLAMA_VULKAN=${OLLAMA_VULKAN:-1}
+      - OLLAMA_IGPU_ENABLE=${OLLAMA_IGPU_ENABLE:-1}
+      - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE:--1}
+      - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-3}
+      - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS:-3}
+      - OLLAMA_CONTEXT_LENGTH=${OLLAMA_CONTEXT_LENGTH:-60000}
+    ports:
+      - '${HOST_OLLAMA_PORT:-43034}:11434'
+    volumes:
+      - /opt/models/ollama:/root/.ollama
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    devices: [/dev/dri, /dev/kfd, /dev/accel]
+    group_add:
+      - ${RENDER_GID:-render}
+      - video
+    ipc: host
+    privileged: true
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'ollama list >/dev/null 2>&1 || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  open-webui:
+    container_name: odysseus-open-webui
+    image: ghcr.io/open-webui/open-webui:latest
+    ports:
+      - 43080:8080
+    environment:
+      - ENABLE_OPENAI_API=${OPENWEBUI_ENABLE_OPENAI_API:-true}
+      - ENABLE_OLLAMA_API=${OPENWEBUI_ENABLE_OLLAMA_API:-true}
+      - OLLAMA_BASE_URL=${OPENWEBUI_OLLAMA_BASE_URL:-http://ollama:11434}
+      - OLLAMA_BASE_URLS=${OPENWEBUI_OLLAMA_BASE_URLS:-http://ollama:11434}
+      - ENABLE_DIRECT_CONNECTIONS=${OPENWEBUI_ENABLE_DIRECT_CONNECTIONS:-false}
+      - TOOL_SERVER_CONNECTIONS=${OPENWEBUI_TOOL_SERVER_CONNECTIONS:-[]}
+      - CORS_ALLOW_ORIGIN=${OPENWEBUI_CORS_ALLOW_ORIGIN:-https://ai.omega2k.de}
+      - USER_AGENT=${OPENWEBUI_USER_AGENT:-odysseus-open-webui}
+    volumes:
+      - open-webui-data:/app/backend/data
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
