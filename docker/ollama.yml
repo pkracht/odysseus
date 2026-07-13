@@ -5,6 +5,7 @@ services:
     image: ollama/ollama:latest
     shm_size: 8gb
     environment:
+      - OLLAMA_API_KEY=${OLLAMA_API_KEY:-91ba3a54301c86cd931a6ff9af991be5}
       - OLLAMA_HOST=0.0.0.0:11434
       - HF_TOKEN=${HF_TOKEN}
       - OLLAMA_VULKAN=${OLLAMA_VULKAN:-1}
@@ -19,7 +20,10 @@ services:
       - /opt/models/ollama:/root/.ollama
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
-    devices: [/dev/dri, /dev/kfd, /dev/accel]
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/kfd:/dev/kfd
+      - /dev/accel:/dev/accel
     group_add:
       - ${RENDER_GID:-render}
       - video
